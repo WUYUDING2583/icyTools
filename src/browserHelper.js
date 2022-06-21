@@ -15,4 +15,11 @@ async function startBrowser(headless = true) {
   return browser;
 }
 
-module.exports = { startBrowser };
+async function openNewPage(url) {
+  const browser = await startBrowser();
+  const page = await browser.newPage();
+  await page.goto(url);
+  return [page, browser];
+}
+
+module.exports = { startBrowser, openNewPage };

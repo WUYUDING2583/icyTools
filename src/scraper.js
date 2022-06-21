@@ -1,14 +1,19 @@
-const { startBrowser } = require("./browserHelper");
+const { startBrowser, openNewPage } = require("./browserHelper");
 
 const URLS = {
   NFT_DETAIL: "https://icy.tools/collections",
 };
 
 async function getNFTLast24HoursData(address) {
-  const browser = await startBrowser();
-  const page = await browser.newPage();
-  await page.goto(`${URLS.NFT_DETAIL}/${address}`);
+  const [page, browser] = await openNewPage(`${URLS.NFT_DETAIL}/${address}`);
   await page.waitForSelector("#__next");
+  const collectionLinks = await getCollectionLink(page);
+  console.log(collectionLinks);
+
+  await page.close();
+  await browser.close();
+}
+async function getCollectionLink(page) {
   const collectionLinks = await page.$$eval(
     ".font-body.font-semibold.antialiased.text-sm.text-darker",
     (titles) =>
@@ -18,22 +23,8 @@ async function getNFTLast24HoursData(address) {
           .nextElementSibling.querySelectorAll("button")
       ).map((button) => button.querySelector("a").href)
   );
-  console.log(collectionLinks);
-
-  await page.close();
-  await browser.close();
-  // const t = await page.$$eval(
-  //   ".font-body.font-semibold.antialiased.text-sm.text-darker:first-child + div button",
-  //   (buttons) =>
-  //     buttons
-  //       .filter((button) => {
-  //         return button.textContent === "Collection info";
-  //       })
-  //       .map((button) => button.querySelector("a").href)
-  // );
-  // console.log(t, t?.textContent);
+  return collectionLinks;
 }
-
 // const scraperObject = {
 // url: "https://icy.tools/",
 // async scraper(browser) {
